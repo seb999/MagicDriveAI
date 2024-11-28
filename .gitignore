@@ -1,0 +1,6 @@
+*.jpg
+/Images
+/venv
+
+image_classifier.keras
+model.tflite
