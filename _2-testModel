@@ -1,0 +1,47 @@
+import os
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.preprocessing import image
+from PIL import Image  # Optional, if you want to open/process images
+
+# Define image parameters and folder path
+img_height = 180
+img_width = 320
+folder_path = 'test_images'
+
+# Load the trained model
+try:
+    model = tf.keras.models.load_model('image_classifier.keras')
+except Exception as e:
+    print(f"Error loading model: {e}")
+    exit(1)
+
+# Define class labels
+class_labels = ['center', 'left', 'right']
+
+# Loop through each file in the directory
+for filename in os.listdir(folder_path):
+    if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+        image_path = os.path.join(folder_path, filename)
+        try:
+            # Load and preprocess the image
+            img = image.load_img(image_path, target_size=(img_height, img_width))
+        except Exception as e:
+            print(f"Error loading image {filename}: {e}")
+            continue
+
+        img_array = image.img_to_array(img)
+        img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
+        img_array /= 255.0  # Normalize pixel values
+
+        # Make predictions
+        predictions = model.predict(img_array)
+        predicted_class_index = np.argmax(predictions)
+        predicted_class_label = class_labels[predicted_class_index]
+        confidence_score = predictions[0][predicted_class_index] * 100
+
+        # Print results
+        print(f"Image: {filename}")
+        print(f"Predicted class: {predicted_class_label}")
+        print(f"Class probabilities: {predictions[0]}")
+        print(f"Confidence score: {confidence_score:.2f}%\n")
